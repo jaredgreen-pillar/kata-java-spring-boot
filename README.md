@@ -79,8 +79,35 @@ Import Gradle Project
   - If you miss the popup, select the text at the bottom of the IDE `Unlinked Gradle Project?: Import...` and then import
 - Within the `Import Module from Gradle` menu
   - Check `Use Auto-import`
+    - This allows build.gradle changes to be reflected immediately
   - Gradle home: `/usr/local/Cellar/gradle/X.X/libexec` 
     - X.X is the version of gradle installed through Brew
   - Everything else should be able to be left as the default
   - Select Apply
 
+
+## **Application Entry**
+Every Java project requires a main method as the entry point to the application. We need ours to run Spring.
+
+Create the Java class your main method will live within
+ - ex: `src/main/java/hello/Application.java`
+ ```
+package hello;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+
+}
+ ```
+
+ Adding Tests
+
+
+ ##
