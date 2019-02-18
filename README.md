@@ -34,7 +34,10 @@ https://spring.io/guides/gs/spring-boot/#scratch
 Assuming you have created a desired project directory and are navigated inside of it
 
 - `mkdir -p src/main/java/hello`
-- create `build.gradle` file at root of project
+- `mkdir -p src/test/java/hello`
+- `touch build.gradle`
+
+Inside the `build.gradle` file located within the root directory
 ```
 buildscript {
     repositories {
