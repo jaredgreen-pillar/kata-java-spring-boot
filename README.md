@@ -65,11 +65,14 @@ targetCompatibility = 11 // replace with 1.8 for Java 8
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
+
     testCompile("junit:junit")
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.23.0'
 }
 ```
 
-## Setup IntelliJ
+## **Setup IntelliJ**
 Set Project SDK
 - `File` -> `Project Structure` -> `Project` -> Set Project SDK to your Java installation
 
@@ -107,7 +110,123 @@ public class Application {
 }
  ```
 
- Adding Tests
+## **Development**
+
+Using the standard Controller + Service implemenation. The controller implements the API contracts, but contains little to no business logic. That logic is pushed down into the Service class.
+
+### Create a Service
+Using standard unit testing style, it tests the implementation of the Service.
+
+`src/test/java/hello/HelloServiceTest.java`
+```
+package hello;
+
+import org.junit.Test;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+
+public class HelloServiceTest {
+    @Test
+    public void retrieveHelloWorldStatementReturnsHelloWorldStatement() {
+        HelloService helloService = new HelloService();
+
+        String helloWorldStatement = helloService.retrieveHelloWorldStatement();
+
+        assertThat(helloWorldStatement, is("Hello World!"));
+    }
+}
+```
+`src/main/java/hello/HelloService.java`
+```
+package hello;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class HelloService {
+
+    public String retrieveHelloWorldStatement() {
+        return "Hello World!";
+    }
+
+}
+
+```
+
+### Add a Controller
+Testing with MockMVC and mocked service. This allows testing the Spring annotations are configured correctly and the implementation uses the Service class rather than containing a lot of internal logic.
+
+`src/test/java/hello/HelloControllerTest.java`.
+```
+package hello;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+public class HelloControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private HelloService mockHelloService;
+
+    @Test
+    public void shouldReturnServiceHelloWorldStatement() throws Exception {
+        when(mockHelloService.retrieveHelloWorldStatement()).thenReturn("Hello PillarCon");
+
+        mockMvc.perform(get("/"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Hello PillarCon")));
+    }
+}
+```
 
 
- ##
+`src/main/java/hello/HelloController.java`
+```
+package hello;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    private HelloService helloService;
+
+    @Autowired
+    public HelloController(HelloService helloService) {
+        this.helloService = helloService;
+    }
+
+    @RequestMapping("/")
+    public String index() {
+        return helloService.retrieveHelloWorldStatement();
+    }
+
+}
+```
+
+
+### Notes
+Java 11 and Mockito 2.24.0 are incompatible. Downgrade to 2.23.0 until a new version functions appropriately with Java 11.
