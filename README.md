@@ -76,6 +76,8 @@ dependencies {
 ```
 
 ## **Setup IntelliJ**
+Note: It may be possible some or all of these steps are already completed upon initally opening IntelliJ. It is all complete when you are able to successfully run `gradle test` or some other gradle commands through the terminal and/or UI.
+
 Set Project SDK
 - `File` -> `Project Structure` -> `Project` -> Set Project SDK to your Java installation
 
